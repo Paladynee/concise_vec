@@ -1,0 +1,9 @@
+[package]
+name = "concise_vec"
+version = "0.2.0"
+edition = "2024"
+
+[features]
+default = ["std"]
+std = []
+alloc = []
