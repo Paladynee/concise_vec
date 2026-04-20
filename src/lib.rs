@@ -1,4 +1,4 @@
-#![allow(incomplete_features)]
+#![allow(incomplete_features, clippy::type_repetition_in_bounds)]
 #![feature(
     const_cmp,
     const_default,
@@ -12,14 +12,10 @@
 mod aligner;
 mod concise_vec;
 mod heap_strategy_provider;
+mod into_iter;
 mod lenfield;
 mod lenty_provide;
 mod raw_data;
-mod into_iter;
 mod stp;
 
-use aligner::AlignTyProvider;
-use aligner::Aligner;
 pub use concise_vec::ConciseVec;
-use lenty_provide::ProvideLenTy;
-use stp::SizedTP;

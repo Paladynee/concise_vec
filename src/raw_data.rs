@@ -2,7 +2,7 @@ use core::mem::MaybeUninit;
 
 use crate::stp::SizedTP;
 
-#[repr(packed)]
+#[repr(C, packed)]
 pub union RawData<const BYTE_CAP: usize>
 where
     [(); BYTE_CAP / <*const ()>::SIZE * <*const ()>::SIZE]:,

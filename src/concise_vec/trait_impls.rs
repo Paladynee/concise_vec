@@ -1,6 +1,7 @@
 use core::ops::Deref;
 use core::ops::DerefMut;
 use core::ptr;
+use core::slice;
 
 use crate::ConciseVec;
 use crate::aligner::AlignTyProvider;
@@ -79,5 +80,53 @@ where
                 ptr::drop_in_place(self.as_mut_slice());
             }
         }
+    }
+}
+
+impl<
+    's,
+    T,
+    LenTy: const ProvideLenTy,
+    const BYTE_CAP: usize,
+    const HEAP_ALLOWED: bool,
+> IntoIterator for &'s ConciseVec<T, LenTy, BYTE_CAP, HEAP_ALLOWED>
+where
+    // this is proof that the Aligner can work for all bools.
+    (): const AlignTyProvider<HEAP_ALLOWED>,
+    // this is proof that the StrategyProvider can work for all bools.
+    (): const StrategyProvider<LenTy, HEAP_ALLOWED>,
+    // this is proof that the PushProvider can work for all bools.
+    (): PushProvider<T, LenTy, BYTE_CAP, HEAP_ALLOWED>,
+    // this is proof that BYTE_CAP does not exceed a usize (??? rust???)
+    [(); BYTE_CAP / <*const ()>::SIZE * <*const ()>::SIZE]:,
+{
+    type Item = &'s T;
+    type IntoIter = slice::Iter<'s, T>;
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+
+impl<
+    's,
+    T,
+    LenTy: const ProvideLenTy,
+    const BYTE_CAP: usize,
+    const HEAP_ALLOWED: bool,
+> IntoIterator for &'s mut ConciseVec<T, LenTy, BYTE_CAP, HEAP_ALLOWED>
+where
+    // this is proof that the Aligner can work for all bools.
+    (): const AlignTyProvider<HEAP_ALLOWED>,
+    // this is proof that the StrategyProvider can work for all bools.
+    (): const StrategyProvider<LenTy, HEAP_ALLOWED>,
+    // this is proof that the PushProvider can work for all bools.
+    (): PushProvider<T, LenTy, BYTE_CAP, HEAP_ALLOWED>,
+    // this is proof that BYTE_CAP does not exceed a usize (??? rust???)
+    [(); BYTE_CAP / <*const ()>::SIZE * <*const ()>::SIZE]:,
+{
+    type Item = &'s mut T;
+    type IntoIter = slice::IterMut<'s, T>;
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter_mut()
     }
 }

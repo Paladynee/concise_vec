@@ -89,24 +89,6 @@ impl<LenTy: const ProvideLenTy> const LenStrategy<LenTy> for HeapEnabled {
     }
 }
 
-pub const trait LenLogic<LenTy: const ProvideLenTy, const HEAP: bool> {
-    fn numeric_value_fits(val: LenTy) -> bool;
-}
-
-impl<LenTy: const ProvideLenTy> const LenLogic<LenTy, false> for () {
-    #[inline]
-    fn numeric_value_fits(_: LenTy) -> bool {
-        true
-    }
-}
-
-impl<LenTy: const ProvideLenTy> const LenLogic<LenTy, true> for () {
-    #[inline]
-    fn numeric_value_fits(val: LenTy) -> bool {
-        val <= LenTy::LEN_FIELD_MASK
-    }
-}
-
 pub const trait StrategyProvider<LenTy: const ProvideLenTy, const HEAP: bool> {
     type Strategy: const LenStrategy<LenTy>;
 }

@@ -2,10 +2,8 @@ use core::fmt::Debug;
 use core::hash::Hash;
 use core::mem::size_of;
 
-pub(crate) mod private {
-    use crate::stp::SizedTP;
-
-    pub(crate) trait Sealed {}
+pub mod private {
+    pub trait Sealed {}
     macro_rules! impl_sealed {
         ($($Ty:ty),* $(,)?) => {
             $( impl Sealed for $Ty {} )*

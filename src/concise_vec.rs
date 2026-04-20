@@ -3,7 +3,7 @@ mod push_provider;
 mod trait_impls;
 
 use core::marker::PhantomData;
-use core::mem::MaybeUninit;
+use core::ptr;
 use core::slice;
 
 use push_provider::PushProvider;
@@ -88,6 +88,7 @@ where
     [(); BYTE_CAP / <*const ()>::SIZE * <*const ()>::SIZE]:,
 {
     #[inline]
+    #[allow(clippy::assertions_on_constants)]
     const fn well_formedness_check() {
         // the LenTy must fit within.
         assert!(
@@ -127,8 +128,10 @@ where
         const { Self::_ASSERT_WELL_FORMED };
         let mut data = RawData::new();
         unsafe {
-            (*data.get_mut_ptr::<MaybeUninit<LenTy>>(Self::LENFIELD_OFFSET))
-                .write(LenTy::ZERO)
+            data.get_mut_ptr::<LenField<LenTy, HEAP_ALLOWED>>(
+                Self::LENFIELD_OFFSET,
+            )
+            .write(LenField::new())
         };
         ConciseVec {
             data,
@@ -329,7 +332,7 @@ where
         } else {
             let len = self.len().to_usize_lossy();
             if len > 0 {
-                let slice = core::ptr::slice_from_raw_parts_mut(
+                let slice = ptr::slice_from_raw_parts_mut(
                     unsafe {
                         self.data.get_mut_ptr::<T>(Self::T_STORAGE_START_OFFSET)
                     },
@@ -337,7 +340,7 @@ where
                 );
                 unsafe {
                     self.get_len_field_mut().set_len(LenTy::ZERO);
-                    core::ptr::drop_in_place(slice);
+                    ptr::drop_in_place(slice);
                 }
             }
         }
@@ -363,12 +366,11 @@ where
             unsafe {
                 let remaining_len = current_len - len;
                 let ptr = self.data.get_mut_ptr::<T>(len * Self::T_STRIDE);
-                let slice =
-                    core::ptr::slice_from_raw_parts_mut(ptr, remaining_len);
+                let slice = ptr::slice_from_raw_parts_mut(ptr, remaining_len);
 
                 self.get_len_field_mut()
                     .set_len(LenTy::from_usize_lossy(len));
-                core::ptr::drop_in_place(slice);
+                ptr::drop_in_place(slice);
             }
         }
     }
